@@ -118,6 +118,7 @@ pub async fn spawn_server(root: &Path) -> Result<(ServerInstance, warg_client::C
         namespace_map_path: Some(root.join("namespaces")),
         keys: IndexSet::new(),
         keyring_auth: false,
+        use_hints: false,
     };
 
     Ok((instance, config))
