@@ -1017,8 +1017,6 @@ fn componentize(
 pub struct PublishOptions<'a> {
     /// The package to publish.
     pub package: &'a Package,
-    /// The registry URL to publish to.
-    pub registry_url: &'a str,
     /// Whether to initialize the package or not.
     pub init: bool,
     /// The name of the package being published.
@@ -1095,7 +1093,7 @@ pub async fn publish(config: &Config, options: &PublishOptions<'_>) -> Result<()
         return Ok(());
     }
 
-    let client = create_client(config.warg(), options.registry_url, config.terminal())?;
+    let client = create_client(config.warg(), config.terminal())?;
 
     let bytes = fs::read(options.path).with_context(|| {
         format!(

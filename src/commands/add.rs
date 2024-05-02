@@ -104,7 +104,7 @@ impl AddCommand {
                 ),
             )?;
         } else {
-            let version = self.resolve_version(&config, &metadata, name, true).await?;
+            let version = self.resolve_version(&config, name, true).await?;
             let version = version.trim_start_matches('^');
             self.add(package, version)?;
 
@@ -120,13 +120,11 @@ impl AddCommand {
     async fn resolve_version(
         &self,
         config: &Config,
-        metadata: &ComponentMetadata,
         name: &PackageName,
         network_allowed: bool,
     ) -> Result<String> {
         let mut resolver = DependencyResolver::new(
             config.warg(),
-            &metadata.section.registries,
             None,
             config.terminal(),
             network_allowed,

@@ -8,7 +8,6 @@ use crate::{
 use anyhow::{bail, Context, Result};
 use futures::{stream::FuturesUnordered, StreamExt};
 use indexmap::IndexMap;
-use secrecy::Secret;
 use semver::{Comparator, Op, Version, VersionReq};
 use serde::{
     de::{self, value::MapAccessDeserializer},
@@ -21,7 +20,6 @@ use std::{
     str::FromStr,
     sync::Arc,
 };
-use url::Url;
 use warg_client::{
     storage::{ContentStorage, PackageInfo},
     Config, FileSystemClient, RegistryUrl, StorageLockResult,
@@ -35,45 +33,19 @@ use wit_parser::{PackageId, PackageName, Resolve, UnresolvedPackage, WorldId};
 /// The name of the default registry.
 pub const DEFAULT_REGISTRY_NAME: &str = "default";
 
-/// Finds the URL for the given registry name.
-pub fn find_url<'a>(
-    name: Option<&str>,
-    urls: &'a HashMap<String, Url>,
-    default: Option<&'a str>,
-) -> Result<&'a str> {
-    let name = name.unwrap_or(DEFAULT_REGISTRY_NAME);
-    match urls.get(name) {
-        Some(url) => Ok(url.as_str()),
-        None if name != DEFAULT_REGISTRY_NAME => {
-            bail!("component registry `{name}` does not exist in the configuration")
-        }
-        None => default.context("a default component registry has not been set"),
-    }
-}
-
-/// Gets the auth token for the given registry URL.
-pub fn auth_token(config: &Config, registry: Option<String>) -> Result<Option<Secret<String>>> {
-    if config.keyring_auth {
-        return if let Some(reg_url) = registry {
-            Ok(get_auth_token(&RegistryUrl::new(reg_url)?)?)
-        } else if let Some(url) = config.home_url.as_ref() {
-            Ok(get_auth_token(&RegistryUrl::new(url)?)?)
-        } else {
-            Ok(None)
-        };
-    }
-    Ok(None)
-}
 /// Creates a registry client with the given warg configuration.
 pub fn create_client(
     config: &warg_client::Config,
-    url: &str,
     terminal: &Terminal,
 ) -> Result<FileSystemClient> {
+    let auth_token = match (config.keyring_auth, &config.home_url) {
+        (true, Some(url)) => get_auth_token(&RegistryUrl::new(url)?)?,
+        _ => None,
+    };
     match FileSystemClient::try_new_with_config(
-        Some(url),
+        None,
         config,
-        auth_token(config, Some(url.to_string()))?,
+        auth_token.clone(),
     )? {
         StorageLockResult::Acquired(client) => Ok(client),
         StorageLockResult::NotAcquired(path) => {
@@ -84,9 +56,9 @@ pub fn create_client(
             )?;
 
             Ok(FileSystemClient::new_with_config(
-                Some(url),
+                None,
                 config,
-                auth_token(config, Some(url.to_string()))?,
+                auth_token,
             )?)
         }
     }
@@ -440,7 +412,6 @@ impl<'a> DecodedDependency<'a> {
 /// Used to resolve dependencies for a WIT package.
 pub struct DependencyResolver<'a> {
     terminal: &'a Terminal,
-    registry_urls: &'a HashMap<String, Url>,
     warg_config: &'a Config,
     lock_file: Option<LockFileResolver<'a>>,
     registries: IndexMap<&'a str, Registry<'a>>,
@@ -452,14 +423,12 @@ impl<'a> DependencyResolver<'a> {
     /// Creates a new dependency resolver.
     pub fn new(
         warg_config: &'a Config,
-        registry_urls: &'a HashMap<String, Url>,
         lock_file: Option<LockFileResolver<'a>>,
         terminal: &'a Terminal,
         network_allowed: bool,
     ) -> Result<Self> {
         Ok(DependencyResolver {
             terminal,
-            registry_urls,
             warg_config,
             lock_file,
             registries: Default::default(),
@@ -494,13 +463,8 @@ impl<'a> DependencyResolver<'a> {
                 let registry = match self.registries.entry(registry_name) {
                     indexmap::map::Entry::Occupied(e) => e.into_mut(),
                     indexmap::map::Entry::Vacant(e) => {
-                        let url = find_url(
-                            Some(registry_name),
-                            self.registry_urls,
-                            self.warg_config.home_url.as_deref(),
-                        )?;
                         e.insert(Registry {
-                            client: Arc::new(create_client(self.warg_config, url, self.terminal)?),
+                            client: Arc::new(create_client(self.warg_config, self.terminal)?),
                             packages: HashMap::new(),
                             dependencies: Vec::new(),
                             upserts: HashSet::new(),

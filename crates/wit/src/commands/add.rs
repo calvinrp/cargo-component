@@ -12,14 +12,13 @@ use std::path::PathBuf;
 use warg_protocol::registry::PackageName;
 
 async fn resolve_version(
-    config: &Config,
     warg_config: &warg_client::Config,
     package: &VersionedPackageName,
     registry: &Option<String>,
     terminal: &Terminal,
 ) -> Result<String> {
     let mut resolver =
-        DependencyResolver::new(warg_config, &config.registries, None, terminal, true)?;
+        DependencyResolver::new(warg_config, None, terminal, true)?;
     let dependency = Dependency::Package(RegistryPackage {
         name: Some(package.name.clone()),
         version: package
@@ -103,7 +102,6 @@ impl AddCommand {
             }
             None => {
                 let version = resolve_version(
-                    &config,
                     &warg_config,
                     &self.package,
                     &self.registry,

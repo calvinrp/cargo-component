@@ -46,7 +46,6 @@ async fn resolve_dependencies(
 
     let mut resolver = DependencyResolver::new(
         warg_config,
-        &config.registries,
         lock_file.as_ref().map(LockFileResolver::new),
         terminal,
         true,
@@ -255,7 +254,6 @@ struct PublishOptions<'a> {
     config: &'a Config,
     config_path: &'a Path,
     warg_config: &'a warg_client::Config,
-    url: &'a str,
     signing_key: &'a PrivateKey,
     package: Option<&'a registry::PackageName>,
     init: bool,
@@ -328,7 +326,7 @@ async fn publish_wit_package(options: PublishOptions<'_>, terminal: &Terminal) -
 
     let bytes = add_registry_metadata(options.config, &bytes)?;
     let name = options.package.unwrap_or(&name);
-    let client = create_client(options.warg_config, options.url, terminal)?;
+    let client = create_client(options.warg_config, terminal)?;
 
     let content = client
         .content()
@@ -381,7 +379,7 @@ pub async fn update_lockfile(
 ) -> Result<()> {
     // Resolve all dependencies as if the lock file does not exist
     let mut resolver =
-        DependencyResolver::new(warg_config, &config.registries, None, terminal, true)?;
+        DependencyResolver::new(warg_config, None, terminal, true)?;
     for (name, dep) in &config.dependencies {
         resolver.add_dependency(name, dep).await?;
     }

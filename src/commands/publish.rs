@@ -4,7 +4,7 @@ use crate::{
     PublishOptions,
 };
 use anyhow::{bail, Context, Result};
-use cargo_component_core::{command::CommonOptions, registry::find_url};
+use cargo_component_core::{command::CommonOptions};
 use clap::Args;
 use std::path::PathBuf;
 use warg_credentials::keyring::get_signing_key;
@@ -124,12 +124,6 @@ impl PublishCommand {
             )
         })?;
 
-        let registry_url = find_url(
-            self.registry.as_deref(),
-            &component_metadata.section.registries,
-            config.warg().home_url.as_deref(),
-        )?;
-
         let signing_key = if let Ok(key) = std::env::var("CARGO_COMPONENT_PUBLISH_KEY") {
             PrivateKey::decode(key).context("failed to parse signing key from `CARGO_COMPONENT_PUBLISH_KEY` environment variable")?
         } else {
@@ -175,7 +169,6 @@ impl PublishCommand {
 
         let options = PublishOptions {
             package,
-            registry_url,
             init: self.init,
             name,
             version: &component_metadata.version,

@@ -66,7 +66,6 @@ impl<'a> PackageDependencyResolution<'a> {
 
         let mut resolver = DependencyResolver::new(
             config.warg(),
-            &metadata.section.registries,
             lock_file,
             config.terminal(),
             network_allowed,
@@ -91,7 +90,6 @@ impl<'a> PackageDependencyResolution<'a> {
 
         let mut resolver = DependencyResolver::new(
             config.warg(),
-            &metadata.section.registries,
             lock_file,
             config.terminal(),
             network_allowed,

@@ -3,7 +3,7 @@ use crate::{
     publish_wit_package, PublishOptions,
 };
 use anyhow::{Context, Result};
-use cargo_component_core::{command::CommonOptions, registry::find_url};
+use cargo_component_core::{command::CommonOptions};
 use clap::Args;
 use warg_credentials::keyring::get_signing_key;
 use warg_crypto::signing::PrivateKey;
@@ -45,12 +45,6 @@ impl PublishCommand {
         let terminal = self.common.new_terminal();
         let warg_config = warg_client::Config::from_default_file()?.unwrap_or_default();
 
-        let url = find_url(
-            self.registry.as_deref(),
-            &config.registries,
-            warg_config.home_url.as_deref(),
-        )?;
-
         let signing_key = if let Ok(key) = std::env::var("WIT_PUBLISH_KEY") {
             PrivateKey::decode(key).context(
                 "failed to parse signing key from `WIT_PUBLISH_KEY` environment variable",
@@ -68,7 +62,6 @@ impl PublishCommand {
                 config: &config,
                 config_path: &config_path,
                 warg_config: &warg_config,
-                url,
                 signing_key: &signing_key,
                 package: self.package.as_ref(),
                 init: self.init,

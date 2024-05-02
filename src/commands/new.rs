@@ -159,7 +159,7 @@ impl NewCommand {
         };
 
         let target = self
-            .resolve_target(&config, &registries, target, true)
+            .resolve_target(&config, target, true)
             .await?;
         let source = self.generate_source(&target)?;
 
@@ -512,7 +512,6 @@ world example {{
     async fn resolve_target(
         &self,
         config: &Config,
-        registries: &HashMap<String, Url>,
         target: Option<metadata::Target>,
         network_allowed: bool,
     ) -> Result<Option<(RegistryResolution, Option<String>)>> {
@@ -524,7 +523,6 @@ world example {{
             }) => {
                 let mut resolver = DependencyResolver::new(
                     config.warg(),
-                    registries,
                     None,
                     config.terminal(),
                     network_allowed,
