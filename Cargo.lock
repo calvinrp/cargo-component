@@ -3858,7 +3858,7 @@ dependencies = [
 [[package]]
 name = "warg-api"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "indexmap 2.2.6",
  "itertools 0.12.1",
@@ -3872,7 +3872,7 @@ dependencies = [
 [[package]]
 name = "warg-client"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -3916,7 +3916,7 @@ dependencies = [
 [[package]]
 name = "warg-credentials"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "indexmap 2.2.6",
@@ -3929,7 +3929,7 @@ dependencies = [
 [[package]]
 name = "warg-crypto"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "base64",
@@ -3949,7 +3949,7 @@ dependencies = [
 [[package]]
 name = "warg-protobuf"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "pbjson",
@@ -3967,7 +3967,7 @@ dependencies = [
 [[package]]
 name = "warg-protocol"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "base64",
@@ -3989,7 +3989,7 @@ dependencies = [
 [[package]]
 name = "warg-server"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "axum",
@@ -4019,7 +4019,7 @@ dependencies = [
 [[package]]
 name = "warg-transparency"
 version = "0.5.0-dev"
-source = "git+https://github.com/bytecodealliance/registry?rev=613a7116c068b145e93bfdd5e34eb4130b2c4b50#613a7116c068b145e93bfdd5e34eb4130b2c4b50"
+source = "git+https://github.com/bytecodealliance/registry?rev=a6bf112#a6bf112c33ef2737f73b56d4e0ebbef0bab75104"
 dependencies = [
  "anyhow",
  "indexmap 2.2.6",

@@ -74,11 +74,11 @@ cargo-component-core = { path = "crates/core", version = "0.11.0" }
 #warg-client = { path = "../registry/crates/client" }
 #warg-credentials = { path = "../registry/crates/credentials" }
 #warg-server = { path = "../registry/crates/server" }
-warg-protocol = { git = "https://github.com/bytecodealliance/registry", rev = "613a7116c068b145e93bfdd5e34eb4130b2c4b50" }
-warg-crypto = { git = "https://github.com/bytecodealliance/registry", rev = "613a7116c068b145e93bfdd5e34eb4130b2c4b50" }
-warg-client = { git = "https://github.com/bytecodealliance/registry", rev = "613a7116c068b145e93bfdd5e34eb4130b2c4b50" }
-warg-credentials = { git = "https://github.com/bytecodealliance/registry", rev = "613a7116c068b145e93bfdd5e34eb4130b2c4b50" }
-warg-server = { git = "https://github.com/bytecodealliance/registry", rev = "613a7116c068b145e93bfdd5e34eb4130b2c4b50" }
+warg-protocol = { git = "https://github.com/bytecodealliance/registry", rev = "a6bf112" }
+warg-crypto = { git = "https://github.com/bytecodealliance/registry", rev = "a6bf112" }
+warg-client = { git = "https://github.com/bytecodealliance/registry", rev = "a6bf112" }
+warg-credentials = { git = "https://github.com/bytecodealliance/registry", rev = "a6bf112" }
+warg-server = { git = "https://github.com/bytecodealliance/registry", rev = "a6bf112" }
 anyhow = "1.0.82"
 clap = { version = "4.5.4", features = ["derive"] }
 toml_edit = { version = "0.22.9", features = ["serde"] }
