@@ -3,7 +3,8 @@ use cargo_component_core::terminal::{Color, Terminal, Verbosity};
 use clap::Parser;
 use std::process::exit;
 use wit::commands::{
-    AddCommand, BuildCommand, InitCommand, KeyCommand, PublishCommand, UpdateCommand,
+    AddCommand, BuildCommand, DownloadCommand, InitCommand, KeyCommand, PublishCommand,
+    UpdateCommand,
 };
 
 fn version() -> &'static str {
@@ -26,6 +27,7 @@ struct Wit {
 
 #[derive(Parser)]
 pub enum Command {
+    Download(DownloadCommand),
     Init(InitCommand),
     Add(AddCommand),
     Build(BuildCommand),
@@ -41,6 +43,7 @@ async fn main() -> Result<()> {
     let app = Wit::parse();
 
     if let Err(e) = match app.command {
+        Command::Download(cmd) => cmd.exec().await,
         Command::Init(cmd) => cmd.exec().await,
         Command::Add(cmd) => cmd.exec().await,
         Command::Build(cmd) => cmd.exec().await,

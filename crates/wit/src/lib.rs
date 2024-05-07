@@ -2,7 +2,7 @@
 
 #![deny(missing_docs)]
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use bytes::Bytes;
 use cargo_component_core::{
     lock::{LockFile, LockFileResolver, LockedPackage, LockedPackageVersion},
@@ -12,7 +12,8 @@ use cargo_component_core::{
 use config::Config;
 use indexmap::{IndexMap, IndexSet};
 use lock::{acquire_lock_file_ro, acquire_lock_file_rw, to_lock_file};
-use std::{collections::HashSet, path::Path, time::Duration};
+use semver::VersionReq;
+use std::{collections::HashSet, path::Path, path::PathBuf, time::Duration};
 use warg_client::storage::{ContentStorage, PublishEntry, PublishInfo};
 use warg_crypto::signing::PrivateKey;
 use warg_protocol::registry;
@@ -237,18 +238,27 @@ async fn build_wit_package(
 
     let bytes = wit_component::encode(Some(true), &resolve, package)?;
 
-    let mut producers = wasm_metadata::Producers::empty();
-    producers.add(
-        "processed-by",
-        env!("CARGO_PKG_NAME"),
-        option_env!("WIT_VERSION_INFO").unwrap_or(env!("CARGO_PKG_VERSION")),
-    );
+    //let mut producers = wasm_metadata::Producers::empty();
+    //producers.add(
+    //    "processed-by",
+    //    env!("CARGO_PKG_NAME"),
+    //    option_env!("WIT_VERSION_INFO").unwrap_or(env!("CARGO_PKG_VERSION")),
+    //);
 
-    let bytes = producers
-        .add_to_wasm(&bytes)
-        .context("failed to add producers metadata to output WIT package")?;
+    //let bytes = producers
+    //    .add_to_wasm(&bytes)
+    //    .context("failed to add producers metadata to output WIT package")?;
 
     Ok((name, bytes))
+}
+
+struct DownloadOptions<'a> {
+    warg_config: &'a warg_client::Config,
+    url: &'a str,
+    package: &'a registry::PackageName,
+    version: &'a VersionReq,
+    output: Option<&'a PathBuf>,
+    update: bool,
 }
 
 struct PublishOptions<'a> {
@@ -310,6 +320,85 @@ fn add_registry_metadata(config: &Config, bytes: &[u8]) -> Result<Vec<u8>> {
     metadata
         .add_to_wasm(bytes)
         .context("failed to add registry metadata to component")
+}
+
+async fn download_wit_package(options: DownloadOptions<'_>, terminal: &Terminal) -> Result<()> {
+    let client = create_client(options.warg_config, options.url, terminal)?;
+
+    let name = options.package;
+    let version_req = options.version;
+    terminal.status("Downloading", format!("package `{name}`"))?;
+
+    // update package logs first, if requested, otherwise may just use local cache
+    if options.update {
+        match client.fetch_package(options.package).await {
+            Ok(_) => {}
+            Err(warg_client::ClientError::PackageDoesNotExist {
+                name,
+                has_auth_token,
+            }) => {
+                return terminal.warn(format!(
+                    "Package `{name}` was not found or you do not have access.{login}",
+                    login = if has_auth_token {
+                        ""
+                    } else {
+                        "\nYou may be required to login. Try: `warg login`"
+                    },
+                ));
+            }
+            Err(err) => Err(err)?,
+        }
+    }
+
+    let download = match client.download(options.package, options.version).await? {
+        Some(download) => download,
+        None => {
+            return terminal.warn(format!(
+                "No package found for {name} with version requirement `{version_req}`"
+            ))
+        }
+    };
+
+    let file = std::fs::File::open(download.path)?;
+    let decoded = wit_component::decode_reader(file)?;
+    let resolve = decoded.resolve();
+    let root_package = &resolve.packages[decoded.package()];
+
+    let pkg = PackageName {
+        namespace: options.package.namespace().to_string(),
+        name: options.package.name().to_string(),
+        version: Some(download.version.clone()),
+    };
+    terminal.status("Downloaded", format!("release {pkg}"))?;
+
+    if let Some(wit_version) = &root_package.name.version {
+        let release_version = &download.version;
+        ensure!(
+            wit_version == release_version,
+            "release version {release_version} doesn't match WIT package version {wit_version}"
+        );
+    }
+
+    let wit = wit_component::WitPrinter::default()
+        .print(resolve, resolve.package_names[&root_package.name])?;
+
+    let output_path = if let Some(path) = options.output {
+        path.clone()
+    } else {
+        PathBuf::from(format!("{name}.wit", name = name.name()))
+    };
+
+    log::debug!("Writing to {output_path:?}");
+
+    std::fs::write(&output_path, wit.as_bytes())
+        .context(format!("Failed to create file {output_path:?}"))?;
+
+    terminal.status(
+        "Wrote",
+        format!("package {name} to '{path}'", path = output_path.display()),
+    )?;
+
+    Ok(())
 }
 
 async fn publish_wit_package(options: PublishOptions<'_>, terminal: &Terminal) -> Result<()> {
